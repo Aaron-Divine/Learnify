@@ -1,0 +1,28 @@
+# Dependencies
+node_modules/
+
+# Next.js build output
+.next/
+out/
+
+# Local env files — NEVER commit these (they contain secrets)
+.env.local
+.env.*.local
+
+# Data files — contain user/payment data, keep off repo
+data/users.json
+data/enrollments.json
+data/payments.json
+
+# Uploaded files (large binary assets)
+public/uploads/
+
+# OS / Editor
+.DS_Store
+Thumbs.db
+*.log
+.vscode/
+.idea/
+
+# TypeScript build cache
+tsconfig.tsbuildinfo
