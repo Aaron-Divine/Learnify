@@ -12,7 +12,6 @@ import {
   CheckCircle2,
   AlertTriangle,
   RefreshCw,
-  Sparkles,
   ArrowRight,
   Zap,
   Wallet,
@@ -35,15 +34,6 @@ export function CheckoutModal({
 
   const [veyloAccountNumber, setVeyloAccountNumber] = useState('');
   const [pin, setPin] = useState('');
-
-  // Dynamically detect mock vs live mode from backend
-  const [isMockMode, setIsMockMode] = useState(true);
-  useEffect(() => {
-    fetch('/api/checkout/mode')
-      .then((r) => r.json())
-      .then((d) => setIsMockMode(d.mock === true))
-      .catch(() => setIsMockMode(true));
-  }, []);
 
   const [loading, setLoading] = useState(false);
   const [successData, setSuccessData] = useState<{
@@ -72,28 +62,6 @@ export function CheckoutModal({
       formatted = `${raw.slice(0, 3)} ${raw.slice(3)}`;
     }
     setVeyloAccountNumber(formatted);
-  };
-
-  const fillTestPreset = (preset: 'success' | 'account_not_found' | 'incorrect_pin' | 'insufficient_funds') => {
-    setErrorDetails(null);
-    switch (preset) {
-      case 'success':
-        setVeyloAccountNumber('482 193 7604');
-        setPin('1234');
-        break;
-      case 'account_not_found':
-        setVeyloAccountNumber('999 999 9999');
-        setPin('0000');
-        break;
-      case 'incorrect_pin':
-        setVeyloAccountNumber('482 193 7604');
-        setPin('9999');
-        break;
-      case 'insufficient_funds':
-        setVeyloAccountNumber('111 111 1111');
-        setPin('1234');
-        break;
-    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -162,14 +130,12 @@ export function CheckoutModal({
               </span>
               <span className="text-xs text-muted flex items-center gap-1">
                 <ShieldCheck className="w-3.5 h-3.5 text-emerald-400" />
-                {isMockMode ? 'Dev Mock Mode' : 'Live Veylo API'}
+                Live Veylo API
               </span>
             </div>
             <h2 className="text-2xl font-black text-foreground">Pay with Veylo Wallet</h2>
             <p className="text-xs text-muted">
-              {isMockMode
-                ? 'Using mock Veylo provider. No real money will be charged.'
-                : 'Enter your Veylo account credentials. Your wallet balance will be debited in real time.'}
+              Enter your Veylo account credentials. Your wallet balance will be debited in real time.
             </p>
           </div>
         )}
@@ -183,9 +149,7 @@ export function CheckoutModal({
             <div className="space-y-2">
               <h3 className="text-2xl sm:text-3xl font-black text-foreground">Payment Successful!</h3>
               <p className="text-sm text-muted max-w-md mx-auto">
-                {isMockMode
-                  ? 'Mock payment confirmed. The course video has been unlocked for your account.'
-                  : 'Your Veylo wallet was debited and the payment confirmed. The course video is now unlocked.'}
+                Your Veylo wallet was debited and the payment confirmed. The course video is now unlocked.
               </p>
             </div>
 
@@ -256,45 +220,17 @@ export function CheckoutModal({
               </div>
             )}
 
-            {/* Live wallet notice */}
-            {!isMockMode && (
-              <div className="p-3.5 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 text-xs space-y-1">
-                <div className="flex items-center gap-1.5 font-bold text-emerald-300">
-                  <Zap className="w-3.5 h-3.5" />
-                  Live Payment — Real Veylo Wallet Debit
-                </div>
-                <p className="text-muted leading-relaxed">
-                  Enter your Veylo account number and PIN.
-                  Your Veylo wallet balance will be debited immediately upon confirmation.
-                </p>
+            {/* Wallet notice */}
+            <div className="p-3.5 rounded-2xl bg-brand-cyan/10 border border-brand-cyan/20 text-xs space-y-1">
+              <div className="flex items-center gap-1.5 font-bold text-brand-cyan">
+                <Wallet className="w-4 h-4" />
+                <span>Pay via Veylo Wallet</span>
               </div>
-            )}
-
-            {/* Dev mock test bar */}
-            {isMockMode && (
-              <div className="p-3.5 rounded-2xl bg-brand-cyan/10 border border-brand-cyan/20 text-xs space-y-2">
-                <div className="flex items-center justify-between text-brand-cyan font-bold">
-                  <span className="flex items-center gap-1.5">
-                    <Sparkles className="w-3.5 h-3.5 text-brand-orange" />
-                    Dev Mode — Mock Veylo Wallet
-                  </span>
-                  <span className="text-[10px] text-muted">Click to auto-fill</span>
-                </div>
-                <div className="flex flex-wrap gap-1.5 pt-1">
-                  {[
-                    { label: '✓ Sufficient Funds', preset: 'success' as const, cls: 'bg-emerald-500/20 text-emerald-300 border-emerald-500/30 hover:bg-emerald-500/30' },
-                    { label: 'Account Not Found', preset: 'account_not_found' as const, cls: 'bg-surface-muted text-foreground border-surface-border hover:bg-surface-border' },
-                    { label: 'Wrong PIN', preset: 'incorrect_pin' as const, cls: 'bg-surface-muted text-foreground border-surface-border hover:bg-surface-border' },
-                    { label: 'No Funds', preset: 'insufficient_funds' as const, cls: 'bg-surface-muted text-foreground border-surface-border hover:bg-surface-border' },
-                  ].map(({ label, preset, cls }) => (
-                    <button key={preset} type="button" onClick={() => fillTestPreset(preset)}
-                      className={`px-2.5 py-1 rounded-lg text-[11px] font-semibold border ${cls}`}>
-                      {label}
-                    </button>
-                  ))}
-                </div>
-              </div>
-            )}
+              <p className="text-muted leading-relaxed">
+                Enter your 10-digit Veylo account number and PIN.
+                Your wallet balance will be debited upon confirmation.
+              </p>
+            </div>
 
             {/* Form */}
             <form onSubmit={handleSubmit} className="space-y-4">
