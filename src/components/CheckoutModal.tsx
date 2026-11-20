@@ -314,7 +314,19 @@ export function CheckoutModal({
                     className="w-full pl-10 pr-4 py-2.5 rounded-xl text-sm bg-surface border border-surface-border text-foreground font-mono focus:outline-none focus:ring-2 focus:ring-brand-cyan/60"
                   />
                 </div>
-                <p className="mt-1 text-[11px] text-muted">10-digit Veylo account number</p>
+                <div className="flex items-center justify-between mt-1 text-[11px] text-muted">
+                  <span>10-digit Veylo account number</span>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setVeyloAccountNumber('212 778 2677');
+                      setPin('1234');
+                    }}
+                    className="text-[10px] font-mono font-semibold text-brand-cyan hover:underline transition-colors cursor-pointer"
+                  >
+                    Demo Wallet: 212 778 2677 (Auto-fill)
+                  </button>
+                </div>
               </div>
 
               {/* Veylo PIN */}

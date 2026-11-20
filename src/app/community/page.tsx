@@ -362,6 +362,36 @@ export default function CommunityPage() {
                 </div>
               </div>
 
+              {/* Protocol Telemetry Metrics */}
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 pt-1">
+                <div className="p-3 rounded-2xl bg-surface border border-surface-border space-y-1">
+                  <span className="text-[10px] uppercase font-bold text-muted font-mono tracking-wider block">Protocol</span>
+                  <span className="font-bold text-xs text-foreground flex items-center gap-1">
+                    <span className="w-1.5 h-1.5 rounded-full bg-brand-cyan" />
+                    Open Payments (ILP)
+                  </span>
+                </div>
+                <div className="p-3 rounded-2xl bg-surface border border-surface-border space-y-1">
+                  <span className="text-[10px] uppercase font-bold text-muted font-mono tracking-wider block">Settlement Asset</span>
+                  <span className="font-bold text-xs text-brand-orange truncate block">
+                    $19.00 USD (≈ ₦25,705)
+                  </span>
+                </div>
+                <div className="p-3 rounded-2xl bg-surface border border-surface-border space-y-1">
+                  <span className="text-[10px] uppercase font-bold text-muted font-mono tracking-wider block">Rafiki FX Engine</span>
+                  <span className="font-bold text-xs text-emerald-400 font-mono">
+                    ₦1,353 / USD
+                  </span>
+                </div>
+                <div className="p-3 rounded-2xl bg-surface border border-surface-border space-y-1">
+                  <span className="text-[10px] uppercase font-bold text-muted font-mono tracking-wider block">Mandate Control</span>
+                  <span className="font-bold text-xs text-emerald-400 flex items-center gap-1 font-mono">
+                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                    USER-SOVEREIGN
+                  </span>
+                </div>
+              </div>
+
               {/* Test instructions banner */}
               <div className="p-3.5 rounded-2xl bg-brand-cyan/10 border border-brand-cyan/25 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
                 <div className="space-y-0.5">

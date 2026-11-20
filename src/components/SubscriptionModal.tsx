@@ -302,9 +302,21 @@ export function SubscriptionModal({ isOpen, onClose, onSuccess }: SubscriptionMo
             <form onSubmit={handleSubmit} className="space-y-4">
               {/* Account Number */}
               <div className="space-y-1.5">
-                <label className="block text-xs font-bold text-foreground">
-                  Veylo Account Number
-                </label>
+                <div className="flex items-center justify-between">
+                  <label className="block text-xs font-bold text-foreground">
+                    Veylo Account Number
+                  </label>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setVeyloAccountNumber('212 778 2677');
+                      setPin('1234');
+                    }}
+                    className="text-[10px] font-mono font-semibold text-brand-cyan hover:underline transition-colors cursor-pointer"
+                  >
+                    Demo Wallet: 212 778 2677 (Auto-fill)
+                  </button>
+                </div>
                 <div className="relative">
                   <input
                     type="text"
