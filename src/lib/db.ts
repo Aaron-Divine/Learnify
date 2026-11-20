@@ -468,3 +468,71 @@ export async function getEnrichedPayments(): Promise<EnrichedPayment[]> {
     };
   });
 }
+
+// ==========================================
+// COMMUNITY SUBSCRIPTIONS (Open Payments)
+// ==========================================
+
+export interface CommunitySubscription {
+  id: string;
+  user_id: string;
+  student_email: string;
+  student_name: string;
+  veylo_account_number: string;
+  mandate_reference: string;
+  plan_name: string;
+  amount_usd: number;
+  amount_ngn: number;
+  exchange_rate: number;
+  status: 'active' | 'cancelled';
+  next_billing_date: string;
+  created_at: string;
+  cancelled_at?: string;
+}
+
+const SUBSCRIPTIONS_FILE_PATH = path.join(RUNTIME_DATA_DIR, 'subscriptions.json');
+
+export async function getSubscriptions(): Promise<CommunitySubscription[]> {
+  return readJsonFile<CommunitySubscription[]>(SUBSCRIPTIONS_FILE_PATH, []);
+}
+
+export async function getCommunitySubscription(userId: string): Promise<CommunitySubscription | null> {
+  const all = await getSubscriptions();
+  const sub = all.find((s) => s.user_id === userId && s.status === 'active');
+  return sub || null;
+}
+
+export async function saveCommunitySubscription(
+  data: Omit<CommunitySubscription, 'id' | 'created_at'>
+): Promise<CommunitySubscription> {
+  const all = await getSubscriptions();
+  const updated = all.map((s) =>
+    s.user_id === data.user_id && s.status === 'active'
+      ? { ...s, status: 'cancelled' as const, cancelled_at: new Date().toISOString() }
+      : s
+  );
+  const newSub: CommunitySubscription = {
+    ...data,
+    id: generateId('sub'),
+    created_at: new Date().toISOString(),
+  };
+  updated.unshift(newSub);
+  writeJsonFile(SUBSCRIPTIONS_FILE_PATH, updated);
+  return newSub;
+}
+
+export async function cancelCommunitySubscription(userId: string): Promise<boolean> {
+  const all = await getSubscriptions();
+  let found = false;
+  const updated = all.map((s) => {
+    if (s.user_id === userId && s.status === 'active') {
+      found = true;
+      return { ...s, status: 'cancelled' as const, cancelled_at: new Date().toISOString() };
+    }
+    return s;
+  });
+  if (found) {
+    writeJsonFile(SUBSCRIPTIONS_FILE_PATH, updated);
+  }
+  return found;
+}

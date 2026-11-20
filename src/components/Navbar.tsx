@@ -6,7 +6,7 @@ import { useRouter } from 'next/navigation';
 import { LearnifyLogo } from './LearnifyLogo';
 import { ThemeToggle } from './ThemeToggle';
 import { useStudentAuth } from './StudentAuthContext';
-import { Search, Globe, BookOpen, User, LogOut, LogIn, UserPlus } from 'lucide-react';
+import { Search, Globe, BookOpen, User, LogOut, LogIn, UserPlus, Users } from 'lucide-react';
 
 interface NavbarProps {
   onSearch?: (query: string) => void;
@@ -60,6 +60,18 @@ export function Navbar({ onSearch, searchQuery = '' }: NavbarProps) {
 
           {/* Right Action Controls */}
           <div className="flex items-center gap-2.5 sm:gap-3">
+            {/* Community Link */}
+            <Link
+              href="/community"
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold text-foreground hover:bg-surface-muted transition-colors border border-surface-border"
+            >
+              <Users className="w-3.5 h-3.5 text-brand-purple" />
+              <span>Community</span>
+              <span className="hidden sm:inline-block px-1.5 py-0.2 rounded-full text-[9px] font-extrabold bg-brand-orange/20 text-brand-orange border border-brand-orange/30">
+                $19/mo
+              </span>
+            </Link>
+
             {/* Multi-currency badge */}
             <div className="hidden xl:flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold bg-brand-cyan/10 border border-brand-cyan/20 text-brand-cyan">
               <Globe className="w-3.5 h-3.5" />

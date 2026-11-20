@@ -5,6 +5,7 @@ import { Course } from '@/types';
 import { Navbar } from '@/components/Navbar';
 import { Footer } from '@/components/Footer';
 import { CourseCard } from '@/components/CourseCard';
+import { CommunitySection } from '@/components/CommunitySection';
 import { LearnifyLogo } from '@/components/LearnifyLogo';
 import { Search, Sparkles, BookOpen, Video, ShieldCheck, Filter, Globe2 } from 'lucide-react';
 
@@ -203,6 +204,9 @@ export function HomePageClient({ initialCourses }: HomePageClientProps) {
             </div>
           )}
         </section>
+
+        {/* Premium Learning Community Subscription Section */}
+        <CommunitySection />
 
         {/* UDemy-style Platform Trust Banner */}
         <section className="py-16 bg-surface-muted/50 border-t border-b border-surface-border mt-16">
