@@ -22,6 +22,11 @@ import {
   MessageCircle,
   PlusCircle,
   Check,
+  Play,
+  Pause,
+  RefreshCw,
+  Clock,
+  Zap,
 } from 'lucide-react';
 
 export default function CommunityPage() {
@@ -35,6 +40,21 @@ export default function CommunityPage() {
 
   const [isCancelling, setIsCancelling] = useState(false);
   const [cancelSuccess, setCancelSuccess] = useState(false);
+
+  // 30-Second Demo Cycle State
+  const [secondsLeft, setSecondsLeft] = useState(30);
+  const [autoDebitActive, setAutoDebitActive] = useState(true);
+  const [isProcessingDebit, setIsProcessingDebit] = useState(false);
+  const [debitLogs, setDebitLogs] = useState<
+    Array<{
+      id: string;
+      time: string;
+      status: 'success' | 'blocked' | 'error';
+      text: string;
+      amount?: string;
+    }>
+  >([]);
+  const [blockedNotice, setBlockedNotice] = useState<string | null>(null);
 
   // Load subscription status
   const checkStatus = async () => {
@@ -60,6 +80,99 @@ export default function CommunityPage() {
     }
   }, [student]);
 
+  const triggerRecurringDebit = async () => {
+    if (isProcessingDebit) return;
+    setIsProcessingDebit(true);
+
+    try {
+      const res = await fetch('/api/subscription/recurring-charge', { method: 'POST' });
+      const data = await res.json();
+      const now = new Date().toLocaleTimeString();
+
+      if (data.status === 'blocked' || data.code === 'MANDATE_REVOKED') {
+        // BLOCKED BY VEYLO!
+        setBlockedNotice(
+          data.message || 'Recurring transfer was blocked by Veylo because the mandate was revoked.'
+        );
+        setIsSubscribed(false);
+        setAutoDebitActive(false);
+        setDebitLogs((prev) => [
+          {
+            id: `log_${Date.now()}`,
+            time: now,
+            status: 'blocked',
+            text: `BLOCKED BY VEYLO: ${data.message || 'Mandate revoked by user. Automatic debit stopped!'}`,
+          },
+          ...prev.slice(0, 5),
+        ]);
+        await checkStatus();
+      } else if (data.status === 'success') {
+        // SUCCESSFUL RECURRING DEBIT!
+        const ngnFormatted = data.debited_amount_ngn
+          ? `₦${Number(data.debited_amount_ngn).toLocaleString('en-US', {
+              minimumFractionDigits: 2,
+              maximumFractionDigits: 2,
+            })} NGN`
+          : '₦25,705.67 NGN';
+
+        setDebitLogs((prev) => [
+          {
+            id: `log_${Date.now()}`,
+            time: now,
+            status: 'success',
+            text: `Billed $19.00 USD (${ngnFormatted} @ ₦${
+              data.exchange_rate ? Number(data.exchange_rate).toFixed(0) : '1,353'
+            }/USD via Rafiki). Txn: ${data.transaction_id}`,
+            amount: ngnFormatted,
+          },
+          ...prev.slice(0, 5),
+        ]);
+        setSecondsLeft(30);
+      } else {
+        setDebitLogs((prev) => [
+          {
+            id: `log_${Date.now()}`,
+            time: now,
+            status: 'error',
+            text: `Debit failed: ${data.message || data.error}`,
+          },
+          ...prev.slice(0, 5),
+        ]);
+        setSecondsLeft(30);
+      }
+    } catch (err: any) {
+      setDebitLogs((prev) => [
+        {
+          id: `log_${Date.now()}`,
+          time: new Date().toLocaleTimeString(),
+          status: 'error',
+          text: `Network error: ${err.message}`,
+        },
+        ...prev.slice(0, 5),
+      ]);
+      setSecondsLeft(30);
+    } finally {
+      setIsProcessingDebit(false);
+    }
+  };
+
+  // 30-second recurring timer loop
+  useEffect(() => {
+    if (!isSubscribed || !autoDebitActive) return;
+
+    const timer = setInterval(() => {
+      setSecondsLeft((prev) => {
+        if (prev <= 1) {
+          triggerRecurringDebit();
+          return 30;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+
+    return () => clearInterval(timer);
+  }, [isSubscribed, autoDebitActive]);
+
   const handleCancelSubscription = async () => {
     if (!confirm('Are you sure you want to cancel your community subscription and stop recurring transfers in your Veylo wallet?')) {
       return;
@@ -70,6 +183,7 @@ export default function CommunityPage() {
       if (res.ok) {
         setCancelSuccess(true);
         setIsSubscribed(false);
+        setAutoDebitActive(false);
         await checkStatus();
       }
     } catch {
@@ -168,6 +282,136 @@ export default function CommunityPage() {
                 >
                   {isCancelling ? 'Stopping...' : 'Stop Recurring Transfers'}
                 </button>
+              </div>
+            </div>
+
+            {/* BLOCKED NOTICE IF REVOKED IN VEYLO */}
+            {blockedNotice && (
+              <div className="p-5 rounded-3xl bg-rose-500/15 border-2 border-rose-500/40 text-rose-200 text-xs space-y-2 animate-in fade-in">
+                <div className="flex items-center gap-2 font-black text-rose-300 text-sm">
+                  <AlertCircle className="w-5 h-5 text-rose-400 shrink-0" />
+                  <span>Recurring Transfer Blocked by Veylo!</span>
+                </div>
+                <p className="leading-relaxed">
+                  {blockedNotice}
+                </p>
+                <div className="text-[11px] text-rose-300/80 pt-1">
+                  Notice how Open Payments gives the customer 100% control: because the mandate was revoked on Veylo, the merchant cannot debit another penny.
+                </div>
+              </div>
+            )}
+
+            {/* 30-SECOND RECURRING DEBIT DEMO SIMULATOR */}
+            <div className="p-6 rounded-3xl bg-surface-muted/80 border border-surface-border shadow-xl space-y-5">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-surface-border/60">
+                <div>
+                  <div className="flex items-center gap-2">
+                    <span className="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-ping" />
+                    <span className="text-xs font-mono font-bold uppercase tracking-wider text-brand-orange">
+                      Live Interactive Demo
+                    </span>
+                  </div>
+                  <h4 className="text-lg font-black text-foreground mt-0.5">
+                    30-Second Recurring Debit Cycle (Interledger Open Payments)
+                  </h4>
+                  <p className="text-xs text-muted">
+                    Every 30 seconds, Learnify requests the monthly $19.00 USD (≈ ₦25,705.67 NGN) subscription deduction under your active mandate.
+                  </p>
+                </div>
+
+                <div className="flex items-center gap-3">
+                  <button
+                    onClick={() => setAutoDebitActive(!autoDebitActive)}
+                    className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 ${
+                      autoDebitActive
+                        ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/40'
+                        : 'bg-surface text-muted border border-surface-border'
+                    }`}
+                  >
+                    {autoDebitActive ? <Pause className="w-3.5 h-3.5" /> : <Play className="w-3.5 h-3.5" />}
+                    <span>{autoDebitActive ? 'Auto-Cycle ON' : 'Paused'}</span>
+                  </button>
+
+                  <button
+                    onClick={triggerRecurringDebit}
+                    disabled={isProcessingDebit}
+                    className="px-4 py-2 rounded-xl text-xs font-bold text-white bg-brand-gradient hover:bg-brand-gradient-hover shadow-sm transition-all flex items-center gap-1.5 disabled:opacity-50"
+                  >
+                    <RefreshCw className={`w-3.5 h-3.5 ${isProcessingDebit ? 'animate-spin' : ''}`} />
+                    <span>{isProcessingDebit ? 'Debiting...' : 'Trigger Debit Now'}</span>
+                  </button>
+                </div>
+              </div>
+
+              {/* Progress countdown bar */}
+              <div className="space-y-1.5">
+                <div className="flex justify-between items-center text-xs">
+                  <span className="text-muted flex items-center gap-1">
+                    <Clock className="w-3.5 h-3.5 text-brand-cyan" />
+                    Next automated deduction:
+                  </span>
+                  <span className="font-mono font-black text-brand-orange text-sm">
+                    {autoDebitActive ? `${secondsLeft}s` : 'Paused'}
+                  </span>
+                </div>
+                <div className="w-full h-2.5 rounded-full bg-surface-border/60 overflow-hidden">
+                  <div
+                    className="h-full bg-brand-gradient transition-all duration-1000 ease-linear rounded-full"
+                    style={{ width: `${((30 - secondsLeft) / 30) * 100}%` }}
+                  />
+                </div>
+              </div>
+
+              {/* Test instructions banner */}
+              <div className="p-3.5 rounded-2xl bg-brand-cyan/10 border border-brand-cyan/25 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
+                <div className="space-y-0.5">
+                  <span className="font-bold text-brand-cyan flex items-center gap-1.5">
+                    <Zap className="w-3.5 h-3.5 text-brand-orange-bright" />
+                    Test Stopping Transfers Live:
+                  </span>
+                  <p className="text-[11px] text-muted">
+                    Open <strong className="text-foreground">Veylo Subscriptions</strong>, click <strong className="text-rose-400">&quot;Revoke Mandate&quot;</strong>, then watch this timer hit 0.
+                  </p>
+                </div>
+                <a
+                  href="https://veylo-beta.vercel.app/app/subscriptions"
+                  target="_blank"
+                  rel="noreferrer"
+                  className="px-3.5 py-1.5 rounded-xl font-bold text-xs bg-surface text-brand-cyan border border-brand-cyan/30 hover:bg-surface-muted transition-colors flex items-center gap-1 self-start sm:self-auto shrink-0"
+                >
+                  <span>Open Veylo Subscriptions</span>
+                  <ExternalLink className="w-3 h-3" />
+                </a>
+              </div>
+
+              {/* Live Audit Log */}
+              <div className="space-y-2">
+                <span className="text-[11px] font-bold text-muted uppercase tracking-wider block">
+                  Real-Time Interledger Transfer Log
+                </span>
+                <div className="space-y-1.5 max-h-40 overflow-y-auto font-mono text-xs">
+                  {debitLogs.length === 0 ? (
+                    <div className="p-3 rounded-xl bg-surface border border-surface-border text-muted text-[11px]">
+                      Waiting for next 30-second cycle or click &quot;Trigger Debit Now&quot; to test...
+                    </div>
+                  ) : (
+                    debitLogs.map((log) => (
+                      <div
+                        key={log.id}
+                        className={`p-2.5 rounded-xl border text-[11px] flex items-start gap-2 ${
+                          log.status === 'blocked'
+                            ? 'bg-rose-500/15 border-rose-500/40 text-rose-300 font-bold'
+                            : log.status === 'success'
+                            ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-300'
+                            : 'bg-surface border-surface-border text-muted'
+                        }`}
+                      >
+                        <span className="text-slate-400 shrink-0">[{log.time}]</span>
+                        <span className="leading-relaxed">{log.text}</span>
+                      </div>
+                    ))
+                  )}
+                </div>
               </div>
             </div>
 
