@@ -4,16 +4,16 @@ import { PaymentProvider } from './types';
 /**
  * WalletPaymentProvider
  * ---------------------
- * Real implementation connecting to the external Wallet API.
- * 
+ * Real implementation connecting to the Veylo Wallet API.
+ *
  * Required Environment Variables:
- * - WALLET_API_URL: e.g. "https://api.yourwallet.com/v1"
- * - WALLET_API_KEY: e.g. "wlt_live_secret_key_..."
- * 
- * Endpoint: POST {WALLET_API_URL}/charge
+ * - WALLET_API_URL: e.g. "https://veylo-gold.vercel.app"
+ * - WALLET_API_KEY: Veylo API key (Bearer token)
+ *
+ * Endpoint: POST {WALLET_API_URL}/api/charge
  */
 export class WalletPaymentProvider implements PaymentProvider {
-  public readonly name = 'Live External Wallet API';
+  public readonly name = 'Veylo Live Wallet API';
   public readonly isMock = false;
 
   private apiUrl: string;
@@ -33,7 +33,7 @@ export class WalletPaymentProvider implements PaymentProvider {
       };
     }
 
-    const endpoint = `${this.apiUrl}/charge`;
+    const endpoint = `${this.apiUrl}/api/charge`;
 
     try {
       const response = await fetch(endpoint, {
@@ -41,18 +41,15 @@ export class WalletPaymentProvider implements PaymentProvider {
         headers: {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${this.apiKey}`,
-          'X-Api-Key': this.apiKey,
         },
         body: JSON.stringify({
-          card_number: request.card_number,
-          cvv: request.cvv,
+          veylo_account_number: request.veylo_account_number,
           pin: request.pin,
           amount: request.amount,
           currency: request.currency,
           reference: request.reference,
           description: request.description,
-          receiver_wallet_address: request.receiver_wallet_address,
-          ...(request.expiry ? { expiry: request.expiry } : {}),
+          receiver_account: request.receiver_wallet_address,
         }),
       });
 
@@ -62,7 +59,7 @@ export class WalletPaymentProvider implements PaymentProvider {
         return {
           status: 'failed',
           code: data?.code || 'SERVER_ERROR',
-          message: data?.message || `Wallet API returned HTTP ${response.status} ${response.statusText}`,
+          message: data?.message || `Veylo API returned HTTP ${response.status} ${response.statusText}`,
         };
       }
 
@@ -70,24 +67,27 @@ export class WalletPaymentProvider implements PaymentProvider {
       if (data.status === 'success') {
         return {
           status: 'success',
-          transaction_id: data.transaction_id || data.id || `WTX-${Date.now()}`,
+          transaction_id: data.transaction_id || `VYL-TXN-${Date.now()}`,
           amount: data.amount ?? request.amount,
           currency: data.currency ?? request.currency,
         };
       }
 
-      // Failure response from wallet
+      // Map Veylo failure codes to Learnify internal codes
+      const knownCodes = ['ACCOUNT_NOT_FOUND', 'INCORRECT_PIN', 'INSUFFICIENT_FUNDS'];
+      const code = knownCodes.includes(data.code) ? data.code : 'SERVER_ERROR';
+
       return {
         status: 'failed',
-        code: data.code || 'SERVER_ERROR',
-        message: data.message || 'Payment was declined by the wallet provider.',
+        code,
+        message: data.message || 'Payment was declined by the Veylo wallet.',
       };
     } catch (err: any) {
       console.error('[WalletPaymentProvider] Network or server error:', err?.message || err);
       return {
         status: 'failed',
         code: 'SERVER_ERROR',
-        message: 'Could not connect to the wallet service. Please check network connectivity.',
+        message: 'Could not connect to the Veylo wallet service. Please check network connectivity.',
       };
     }
   }

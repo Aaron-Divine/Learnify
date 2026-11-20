@@ -53,10 +53,9 @@ export interface Enrollment {
 export type PaymentStatus = 'pending' | 'success' | 'failed';
 
 export type PaymentFailureCode =
-  | 'INVALID_CARD'
+  | 'ACCOUNT_NOT_FOUND'
   | 'INCORRECT_PIN'
   | 'INSUFFICIENT_FUNDS'
-  | 'CURRENCY_NOT_SUPPORTED'
   | 'SERVER_ERROR';
 
 export interface Payment {
@@ -84,16 +83,14 @@ export interface EnrichedPayment extends Payment {
 // ==========================================
 
 export interface WalletChargeRequest {
-  card_number: string;
-  cvv: string;
-  pin: string;
-  expiry?: string;
+  // Veylo Wallet fields (replaces old card_number/cvv/pin)
+  veylo_account_number: string;  // e.g. "482 193 7604"
+  pin: string;                    // 4-6 digit Veylo PIN
   amount: number;
   currency: string;
   reference: string;
   description: string;
-  // Rafiki / Open Payments parameters
-  receiver_wallet_address?: string; // Course instructor's wallet address e.g. $ilp.interledger-test.dev/alice
+  receiver_wallet_address?: string; // kept for future use
 }
 
 export interface WalletChargeSuccessResponse {

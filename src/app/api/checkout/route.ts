@@ -32,33 +32,25 @@ export async function POST(req: NextRequest) {
 
     // 3. Parse and Validate Request
     const body = await req.json();
-    const { course_id, card_number, cvv, pin, expiry } = body;
+    const { course_id, veylo_account_number, pin } = body;
 
     if (!course_id) {
       return NextResponse.json({ error: 'Course ID is required' }, { status: 400 });
     }
 
-    const cleanCard = (card_number || '').replace(/\s+/g, '');
-    const cleanCvv = (cvv || '').trim();
+    const cleanAccount = (veylo_account_number || '').replace(/\s+/g, '');
     const cleanPin = (pin || '').trim();
 
-    if (!cleanCard || cleanCard.length < 13 || cleanCard.length > 19) {
+    if (!cleanAccount || cleanAccount.length !== 10) {
       return NextResponse.json(
-        { error: 'A valid card number is required (13-19 digits).' },
-        { status: 400 }
-      );
-    }
-
-    if (!cleanCvv || cleanCvv.length < 3 || cleanCvv.length > 4) {
-      return NextResponse.json(
-        { error: 'A valid 3 or 4-digit CVV security code is required.' },
+        { error: 'A valid 10-digit Veylo account number is required.' },
         { status: 400 }
       );
     }
 
     if (!cleanPin || cleanPin.length < 4 || cleanPin.length > 6) {
       return NextResponse.json(
-        { error: 'A valid 4 to 6-digit wallet PIN is required.' },
+        { error: 'A valid 4 to 6-digit Veylo PIN is required.' },
         { status: 400 }
       );
     }
@@ -84,13 +76,11 @@ export async function POST(req: NextRequest) {
     const reference = `lrf_pay_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`;
 
     // 7. Execute Charge via Payment Provider (Mock or Real Wallet API)
-    // NOTE: Card details (number, cvv, pin) exist in memory only during this request and are NEVER logged or saved.
+    // NOTE: Veylo credentials exist in memory only during this request and are NEVER logged or saved.
     const provider = getPaymentProvider();
     const chargeResult = await provider.charge({
-      card_number: cleanCard,
-      cvv: cleanCvv,
+      veylo_account_number: cleanAccount,
       pin: cleanPin,
-      expiry: expiry ? String(expiry).trim() : undefined,
       amount: course.price,
       currency: course.currency_code,
       reference,
