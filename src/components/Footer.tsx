@@ -24,11 +24,11 @@ export function Footer() {
             <div className="flex flex-wrap gap-2 pt-2">
               <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium bg-brand-cyan/10 text-brand-cyan border border-brand-cyan/20">
                 <Sparkles className="w-3 h-3" />
-                Phase 1: Course Catalog & Admin Studio
+                Interledger &amp; Open Payments Active
               </span>
               <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium bg-brand-orange/10 text-brand-orange border border-brand-orange/20">
                 <ShieldCheck className="w-3 h-3" />
-                Direct Currency Pricing
+                Rafiki Dynamic FX Rates
               </span>
             </div>
           </div>
@@ -45,19 +45,24 @@ export function Footer() {
                 </Link>
               </li>
               <li>
-                <span className="text-muted">
-                  Interledger Settlement (Phase 2)
-                </span>
+                <Link href="/community" className="hover:text-brand-cyan transition-colors">
+                  Community Subscription
+                </Link>
               </li>
               <li>
-                <span className="text-slate-400 cursor-not-allowed">
-                  Payment Checkout (Coming Phase 2)
-                </span>
+                <Link href="/my-courses" className="hover:text-brand-cyan transition-colors">
+                  Student Dashboard
+                </Link>
               </li>
               <li>
-                <span className="text-slate-400 cursor-not-allowed">
-                  Instructor Network (Coming Soon)
-                </span>
+                <a
+                  href="https://veylo-beta.vercel.app"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="hover:text-brand-cyan transition-colors"
+                >
+                  Pay with Veylo Wallet ↗
+                </a>
               </li>
             </ul>
           </div>

@@ -34,7 +34,7 @@ export function HomePageClient({ initialCourses }: HomePageClientProps) {
   }, [courses, searchQuery, selectedCurrency]);
 
   // Available currencies for filter pills
-  const filterCurrencies = ['ALL', 'USD', 'EUR', 'GBP', 'CAD', 'SGD', 'MXN', 'COP', 'ZAR', 'PKR', 'PEB', 'EGG'];
+  const filterCurrencies = ['ALL', 'USD', 'NGN', 'EUR', 'GBP'];
 
   return (
     <div className="min-h-screen flex flex-col bg-background text-foreground">
@@ -104,7 +104,7 @@ export function HomePageClient({ initialCourses }: HomePageClientProps) {
               <div className="pt-6 grid grid-cols-2 sm:grid-cols-3 gap-6 sm:gap-10 text-muted">
                 <div className="flex items-center justify-center gap-2 text-xs sm:text-sm font-medium">
                   <Globe2 className="w-4 h-4 text-brand-cyan" />
-                  <span>11 Supported Currencies</span>
+                  <span>Open Payments Settlement</span>
                 </div>
                 <div className="flex items-center justify-center gap-2 text-xs sm:text-sm font-medium">
                   <Video className="w-4 h-4 text-brand-purple" />
@@ -241,9 +241,9 @@ export function HomePageClient({ initialCourses }: HomePageClientProps) {
                   <ShieldCheck className="w-6 h-6" />
                 </div>
                 <div>
-                  <h4 className="font-bold text-base text-foreground">Phase 1 Architecture</h4>
+                  <h4 className="font-bold text-base text-foreground">Open Payments Guaranteed Settlement</h4>
                   <p className="text-xs sm:text-sm text-muted mt-1 leading-relaxed">
-                    Built cleanly with Next.js and modular design. Payment infrastructure and multi-instructor support can easily hook in for Phase 2.
+                    Powered by Interledger and Open Payments. Fast, secure checkout with single-mandate consumer protection and zero card scheme fees.
                   </p>
                 </div>
               </div>
