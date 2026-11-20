@@ -41,6 +41,9 @@ export function CheckoutModal({
     reference: string;
     amount: number;
     currency: string;
+    debited_amount_ngn?: number;
+    debited_currency?: string;
+    exchange_rate?: number;
   } | null>(null);
 
   const [errorDetails, setErrorDetails] = useState<{
@@ -48,6 +51,36 @@ export function CheckoutModal({
     message: string;
     remainingAttempts?: number;
   } | null>(null);
+
+  // Live Interledger Rafiki conversion quote
+  const [quoteInfo, setQuoteInfo] = useState<{
+    rate: number;
+    approxNgn: number;
+  }>({
+    rate: 1352.93,
+    approxNgn: Math.round(course.price * 1352.93 * 100) / 100,
+  });
+
+  useEffect(() => {
+    if (!isOpen) return;
+    let isMounted = true;
+    const fetchQuote = async () => {
+      try {
+        const res = await fetch(`https://veylo-beta.vercel.app/api/quotes?amount=${course.price}&to=${course.currency_code}&from=NGN`);
+        if (res.ok) {
+          const data = await res.json();
+          if (isMounted && data?.debitAmount?.amount && data?.estimatedExchangeRate) {
+            setQuoteInfo({
+              rate: data.estimatedExchangeRate,
+              approxNgn: data.debitAmount.amount,
+            });
+          }
+        }
+      } catch {}
+    };
+    fetchQuote();
+    return () => { isMounted = false; };
+  }, [isOpen, course.price, course.currency_code]);
 
   if (!isOpen) return null;
 
@@ -98,6 +131,9 @@ export function CheckoutModal({
         reference: data.reference,
         amount: data.amount || course.price,
         currency: data.currency || course.currency_code,
+        debited_amount_ngn: data.debited_amount_ngn,
+        debited_currency: data.debited_currency || 'NGN',
+        exchange_rate: data.exchange_rate,
       });
 
       onPaymentSuccess();
@@ -162,6 +198,15 @@ export function CheckoutModal({
                 <span className="text-muted">Amount Paid:</span>
                 <span className="font-bold text-brand-orange text-sm">{formatPrice(successData.amount, successData.currency)}</span>
               </div>
+              {successData.debited_amount_ngn && (
+                <div className="flex justify-between items-center">
+                  <span className="text-muted">Veylo Debited:</span>
+                  <span className="font-bold text-emerald-400 text-xs">
+                    ₦{Number(successData.debited_amount_ngn).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} NGN
+                    {successData.exchange_rate ? ` (@ ₦${Number(successData.exchange_rate).toFixed(2)}/USD)` : ''}
+                  </span>
+                </div>
+              )}
               <div className="flex justify-between items-center">
                 <span className="text-muted">Transaction ID:</span>
                 <span className="font-mono text-brand-cyan text-[11px]">{successData.transaction_id}</span>
@@ -187,17 +232,35 @@ export function CheckoutModal({
           <div className="space-y-5">
 
             {/* Amount summary */}
-            <div className="p-4 rounded-2xl bg-surface-muted border border-surface-border flex items-center justify-between">
-              <div>
-                <span className="text-[11px] uppercase font-bold text-muted tracking-wider block">Total Due</span>
-                <span className="text-2xl font-black text-brand-orange">{formatPrice(course.price, course.currency_code)}</span>
+            <div className="p-4 rounded-2xl bg-surface-muted border border-surface-border space-y-2">
+              <div className="flex items-center justify-between">
+                <div>
+                  <span className="text-[11px] uppercase font-bold text-muted tracking-wider block">Total Due</span>
+                  <span className="text-2xl font-black text-brand-orange">{formatPrice(course.price, course.currency_code)}</span>
+                </div>
+                <div className="text-right">
+                  <span className="text-[11px] font-mono text-muted block">Currency</span>
+                  <span className="text-xs font-bold px-2 py-0.5 rounded-lg bg-surface border border-surface-border text-foreground">
+                    {course.currency_code}
+                  </span>
+                </div>
               </div>
-              <div className="text-right">
-                <span className="text-[11px] font-mono text-muted block">Currency</span>
-                <span className="text-xs font-bold px-2 py-0.5 rounded-lg bg-surface border border-surface-border text-foreground">
-                  {course.currency_code}
-                </span>
-              </div>
+
+              {/* Interledger Rafiki Currency Conversion */}
+              {course.currency_code.toUpperCase() !== 'NGN' && (
+                <div className="pt-2.5 mt-2 border-t border-surface-border/60 flex items-center justify-between text-xs">
+                  <span className="text-muted flex items-center gap-1.5 font-medium">
+                    <span className="inline-block w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+                    Veylo Debit (Rafiki FX):
+                  </span>
+                  <span className="font-bold text-emerald-400">
+                    ≈ ₦{quoteInfo.approxNgn.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} NGN
+                    <span className="text-[10px] text-muted ml-1 font-normal">
+                      (@ ₦{quoteInfo.rate.toFixed(0)}/USD)
+                    </span>
+                  </span>
+                </div>
+              )}
             </div>
 
             {/* Error */}

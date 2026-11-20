@@ -70,6 +70,10 @@ export class WalletPaymentProvider implements PaymentProvider {
           transaction_id: data.transaction_id || `VYL-TXN-${Date.now()}`,
           amount: data.amount ?? request.amount,
           currency: data.currency ?? request.currency,
+          debited_amount_ngn: data.debited_amount_ngn,
+          debited_currency: data.debited_currency || 'NGN',
+          exchange_rate: data.exchange_rate,
+          protocol: data.protocol || 'Interledger Rafiki',
         };
       }
 

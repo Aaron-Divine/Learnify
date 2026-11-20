@@ -145,6 +145,10 @@ export async function POST(req: NextRequest) {
       enrollment_id: enrollment.id,
       amount: course.price,
       currency: course.currency_code,
+      debited_amount_ngn: (chargeResult as any).debited_amount_ngn,
+      debited_currency: (chargeResult as any).debited_currency || 'NGN',
+      exchange_rate: (chargeResult as any).exchange_rate,
+      protocol: (chargeResult as any).protocol || 'Interledger Rafiki',
       message: 'Payment verified! You are now enrolled in this course.',
     });
   } catch (err: any) {

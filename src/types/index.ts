@@ -98,6 +98,10 @@ export interface WalletChargeSuccessResponse {
   transaction_id: string;
   amount: number;
   currency: string;
+  debited_amount_ngn?: number;
+  debited_currency?: string;
+  exchange_rate?: number;
+  protocol?: string;
 }
 
 export interface WalletChargeFailureResponse {
