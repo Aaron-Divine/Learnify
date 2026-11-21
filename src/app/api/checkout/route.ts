@@ -32,13 +32,13 @@ export async function POST(req: NextRequest) {
 
     // 3. Parse and Validate Request
     const body = await req.json();
-    const { course_id, veylo_account_number, wallet_address, pin } = body;
+    const { course_id, veylo_account_number, account_number, wallet_address, pin } = body;
 
     if (!course_id) {
       return NextResponse.json({ error: 'Course ID is required' }, { status: 400 });
     }
 
-    const cleanAccount = (veylo_account_number || '').replace(/\s+/g, '');
+    const cleanAccount = (veylo_account_number || account_number || '').replace(/\s+/g, '');
     const cleanPin = (pin || '').trim();
 
     if (!cleanAccount || cleanAccount.length !== 10) {

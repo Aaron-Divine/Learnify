@@ -27,9 +27,9 @@ export async function POST(req: NextRequest) {
 
     // 3. Parse input
     const body = await req.json();
-    const { veylo_account_number, wallet_address, pin, price_usd = 19.0 } = body;
+    const { veylo_account_number, account_number, wallet_address, pin, price_usd = 19.0 } = body;
 
-    const cleanAccount = (veylo_account_number || '').replace(/\s+/g, '');
+    const cleanAccount = (veylo_account_number || account_number || '').replace(/\s+/g, '');
     const cleanPin = (pin || '').trim();
 
     if (!cleanAccount || cleanAccount.length !== 10) {
