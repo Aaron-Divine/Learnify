@@ -15,6 +15,9 @@ import {
   ArrowRight,
   Zap,
   Wallet,
+  CreditCard,
+  Building,
+  Coins,
 } from 'lucide-react';
 
 interface CheckoutModalProps {
@@ -32,7 +35,9 @@ export function CheckoutModal({
 }: CheckoutModalProps) {
   const { student, openAuthModal } = useStudentAuth();
 
+  const [paymentMethod, setPaymentMethod] = useState<'veylo' | 'card' | 'bank' | 'crypto'>('veylo');
   const [veyloAccountNumber, setVeyloAccountNumber] = useState('');
+  const [walletAddressName, setWalletAddressName] = useState('');
   const [pin, setPin] = useState('');
 
   const [loading, setLoading] = useState(false);
@@ -111,6 +116,7 @@ export function CheckoutModal({
         body: JSON.stringify({
           course_id: course.id,
           veylo_account_number: veyloAccountNumber,
+          wallet_address: walletAddressName.trim(),
           pin,
         }),
       });
@@ -283,102 +289,239 @@ export function CheckoutModal({
               </div>
             )}
 
-            {/* Wallet notice */}
-            <div className="p-3.5 rounded-2xl bg-brand-cyan/10 border border-brand-cyan/20 text-xs space-y-1">
-              <div className="flex items-center gap-1.5 font-bold text-brand-cyan">
-                <Wallet className="w-4 h-4" />
-                <span>Pay via Veylo Wallet</span>
+            {/* Payment Method Selector Tabs (Multiple Options for Views) */}
+            <div>
+              <label className="block text-xs font-bold uppercase tracking-wider text-muted mb-2">
+                Select Payment Method
+              </label>
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                <button
+                  type="button"
+                  onClick={() => setPaymentMethod('veylo')}
+                  className={`p-2.5 rounded-xl border text-left transition-all flex flex-col justify-between gap-1.5 ${
+                    paymentMethod === 'veylo'
+                      ? 'border-brand-cyan bg-brand-cyan/15 text-foreground ring-1 ring-brand-cyan'
+                      : 'border-surface-border bg-surface-muted text-muted hover:border-slate-500'
+                  }`}
+                >
+                  <div className="flex items-center justify-between">
+                    <Wallet className="w-4 h-4 text-brand-cyan" />
+                    <span className="text-[9px] font-bold px-1.5 py-0.5 rounded bg-brand-cyan/20 text-brand-cyan">Active</span>
+                  </div>
+                  <span className="text-xs font-bold block">Veylo Wallet</span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => setPaymentMethod('card')}
+                  className={`p-2.5 rounded-xl border text-left transition-all flex flex-col justify-between gap-1.5 ${
+                    paymentMethod === 'card'
+                      ? 'border-brand-cyan bg-brand-cyan/15 text-foreground ring-1 ring-brand-cyan'
+                      : 'border-surface-border bg-surface-muted text-muted hover:border-slate-500'
+                  }`}
+                >
+                  <CreditCard className="w-4 h-4 text-slate-400" />
+                  <span className="text-xs font-bold block">Card</span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => setPaymentMethod('bank')}
+                  className={`p-2.5 rounded-xl border text-left transition-all flex flex-col justify-between gap-1.5 ${
+                    paymentMethod === 'bank'
+                      ? 'border-brand-cyan bg-brand-cyan/15 text-foreground ring-1 ring-brand-cyan'
+                      : 'border-surface-border bg-surface-muted text-muted hover:border-slate-500'
+                  }`}
+                >
+                  <Building className="w-4 h-4 text-slate-400" />
+                  <span className="text-xs font-bold block">Bank Wire</span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => setPaymentMethod('crypto')}
+                  className={`p-2.5 rounded-xl border text-left transition-all flex flex-col justify-between gap-1.5 ${
+                    paymentMethod === 'crypto'
+                      ? 'border-brand-cyan bg-brand-cyan/15 text-foreground ring-1 ring-brand-cyan'
+                      : 'border-surface-border bg-surface-muted text-muted hover:border-slate-500'
+                  }`}
+                >
+                  <Coins className="w-4 h-4 text-slate-400" />
+                  <span className="text-xs font-bold block">Crypto</span>
+                </button>
               </div>
-              <p className="text-muted leading-relaxed">
-                Enter your 10-digit Veylo account number and PIN.
-                Your wallet balance will be debited upon confirmation.
-              </p>
             </div>
 
-            {/* Form */}
-            <form onSubmit={handleSubmit} className="space-y-4">
-              {/* Veylo Account Number */}
-              <div>
-                <label className="block text-xs font-bold uppercase tracking-wider text-muted mb-1.5">
-                  Veylo Account Number
-                </label>
-                <div className="relative">
-                  <Wallet className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-muted" />
-                  <input
-                    type="text"
-                    required
-                    value={veyloAccountNumber}
-                    onChange={handleAccountNumberChange}
-                    placeholder="e.g. 482 193 7604"
-                    maxLength={12}
-                    className="w-full pl-10 pr-4 py-2.5 rounded-xl text-sm bg-surface border border-surface-border text-foreground font-mono focus:outline-none focus:ring-2 focus:ring-brand-cyan/60"
-                  />
+            {/* TAB 1: CARD GATEWAY (DISPLAY/VIEWS ONLY) */}
+            {paymentMethod === 'card' && (
+              <div className="p-4 rounded-2xl bg-surface-muted border border-surface-border space-y-3">
+                <div className="flex items-center gap-2 text-xs font-bold text-amber-500">
+                  <AlertTriangle className="w-4 h-4" />
+                  <span>Card Processor Maintenance</span>
                 </div>
-                <div className="flex items-center justify-between mt-1 text-[11px] text-muted">
-                  <span>10-digit Veylo account number</span>
+                <p className="text-xs text-muted leading-relaxed">
+                  Card scheme interchange processing is currently experiencing high latency. Please use <strong>Veylo Wallet</strong> for sub-second zero-fee settlement.
+                </p>
+                <button
+                  type="button"
+                  onClick={() => setPaymentMethod('veylo')}
+                  className="w-full py-2.5 rounded-xl text-xs font-bold bg-brand-cyan text-brand-navy shadow-sm"
+                >
+                  Switch to Veylo Wallet
+                </button>
+              </div>
+            )}
+
+            {/* TAB 2: BANK TRANSFER (DISPLAY/VIEWS ONLY) */}
+            {paymentMethod === 'bank' && (
+              <div className="p-4 rounded-2xl bg-surface-muted border border-surface-border space-y-3">
+                <div className="text-xs text-muted space-y-1">
+                  <span className="font-bold text-foreground block">Direct Wire Details:</span>
+                  <p>Bank: Standard Chartered Merchant Ops</p>
+                  <p className="font-mono">Account: 0192837482 (Swift: SCBLNGLA)</p>
+                  <p className="text-[11px] text-amber-400 pt-1">
+                    * Manual wire settlement takes 24–48 hours to confirm.
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setPaymentMethod('veylo')}
+                  className="w-full py-2.5 rounded-xl text-xs font-bold bg-brand-cyan text-brand-navy shadow-sm"
+                >
+                  Pay Instantly with Veylo
+                </button>
+              </div>
+            )}
+
+            {/* TAB 3: CRYPTO (DISPLAY/VIEWS ONLY) */}
+            {paymentMethod === 'crypto' && (
+              <div className="p-4 rounded-2xl bg-surface-muted border border-surface-border space-y-3">
+                <p className="text-xs text-muted leading-relaxed">
+                  USDC / USDT on-chain checkout is subject to dynamic gas fee fluctuations ($8–$14). For 0-gas instant settlement, proceed with Veylo.
+                </p>
+                <button
+                  type="button"
+                  onClick={() => setPaymentMethod('veylo')}
+                  className="w-full py-2.5 rounded-xl text-xs font-bold bg-brand-cyan text-brand-navy shadow-sm"
+                >
+                  Use Veylo Wallet (Zero Fees)
+                </button>
+              </div>
+            )}
+
+            {/* TAB 4: VEYLO WALLET (ACTIVE PAYMENT METHOD) */}
+            {paymentMethod === 'veylo' && (
+              <div className="space-y-4">
+                {/* Wallet notice */}
+                <div className="p-3.5 rounded-2xl bg-brand-cyan/10 border border-brand-cyan/20 text-xs space-y-1">
+                  <div className="flex items-center gap-1.5 font-bold text-brand-cyan">
+                    <Wallet className="w-4 h-4" />
+                    <span>Pay with Veylo Wallet</span>
+                  </div>
+                  <p className="text-muted leading-relaxed">
+                    Input your 10-digit account number, confirm your wallet address name, and enter your 4-digit PIN.
+                  </p>
+                </div>
+
+                {/* Form */}
+                <form onSubmit={handleSubmit} className="space-y-4">
+                  {/* Veylo Account Number */}
+                  <div>
+                    <label className="block text-xs font-bold uppercase tracking-wider text-muted mb-1.5">
+                      Veylo Account Number
+                    </label>
+                    <div className="relative">
+                      <Wallet className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-muted" />
+                      <input
+                        type="text"
+                        required
+                        value={veyloAccountNumber}
+                        onChange={handleAccountNumberChange}
+                        placeholder="e.g. 482 193 7604"
+                        maxLength={12}
+                        className="w-full pl-10 pr-4 py-2.5 rounded-xl text-sm bg-surface border border-surface-border text-foreground font-mono focus:outline-none focus:ring-2 focus:ring-brand-cyan/60"
+                      />
+                    </div>
+                    <div className="flex items-center justify-between mt-1 text-[11px] text-muted">
+                      <span>10-digit number assigned to wallet</span>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setVeyloAccountNumber('212 778 2677');
+                          setWalletAddressName('$ilp-veylowallet-divine');
+                          setPin('1234');
+                        }}
+                        className="text-[10px] font-mono font-semibold text-brand-cyan hover:underline transition-colors cursor-pointer"
+                      >
+                        Demo Wallet Auto-Fill
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Wallet Address Name Confirmation */}
+                  <div>
+                    <label className="block text-xs font-bold uppercase tracking-wider text-muted mb-1.5">
+                      Wallet Address Name (Confirm User)
+                    </label>
+                    <div className="relative">
+                      <Zap className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-muted" />
+                      <input
+                        type="text"
+                        value={walletAddressName}
+                        onChange={(e) => setWalletAddressName(e.target.value)}
+                        placeholder="e.g. $ilp-veylowallet-divine or divine"
+                        className="w-full pl-10 pr-4 py-2.5 rounded-xl text-sm bg-surface border border-surface-border text-foreground font-mono focus:outline-none focus:ring-2 focus:ring-brand-cyan/60"
+                      />
+                    </div>
+                    <span className="text-[10px] text-muted block mt-1">
+                      Format: $ilp-veylowallet-(name) or wallet name
+                    </span>
+                  </div>
+
+                  {/* 4-Digit Veylo PIN */}
+                  <div>
+                    <label className="block text-xs font-bold uppercase tracking-wider text-muted mb-1.5">
+                      4-Digit Secret PIN
+                    </label>
+                    <div className="relative">
+                      <KeyRound className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-muted" />
+                      <input
+                        type="password"
+                        required
+                        value={pin}
+                        onChange={(e) => setPin(e.target.value.replace(/\D/g, '').slice(0, 4))}
+                        placeholder="••••"
+                        maxLength={4}
+                        className="w-full pl-10 pr-3 py-2.5 rounded-xl text-sm bg-surface border border-surface-border text-foreground font-mono tracking-widest focus:outline-none focus:ring-2 focus:ring-brand-cyan/60"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="pt-1 text-[11px] text-muted flex items-center justify-center gap-1.5">
+                    <ShieldCheck className="w-3.5 h-3.5 text-brand-cyan" />
+                    <span>Credentials processed securely in memory via Open Payments.</span>
+                  </div>
+
                   <button
-                    type="button"
-                    onClick={() => {
-                      setVeyloAccountNumber('212 778 2677');
-                      setPin('1234');
-                    }}
-                    className="text-[10px] font-mono font-semibold text-brand-cyan hover:underline transition-colors cursor-pointer"
+                    type="submit"
+                    disabled={loading}
+                    className="w-full py-4 px-6 rounded-2xl font-black text-base text-white bg-brand-gradient hover:bg-brand-gradient-hover shadow-glow-brand transition-all flex items-center justify-center gap-2 transform hover:-translate-y-0.5 active:translate-y-0 disabled:opacity-60"
                   >
-                    Demo Wallet: 212 778 2677 (Auto-fill)
+                    {loading ? (
+                      <>
+                        <RefreshCw className="w-5 h-5 animate-spin" />
+                        <span>Authorizing with Veylo...</span>
+                      </>
+                    ) : (
+                      <>
+                        <span>Pay {formatPrice(course.price, course.currency_code)}</span>
+                        <ArrowRight className="w-5 h-5" />
+                      </>
+                    )}
                   </button>
-                </div>
+                </form>
               </div>
-
-              {/* Veylo PIN */}
-              <div>
-                <label className="block text-xs font-bold uppercase tracking-wider text-muted mb-1.5">
-                  Veylo PIN
-                </label>
-                <div className="relative">
-                  <KeyRound className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-muted" />
-                  <input
-                    type="password"
-                    required
-                    value={pin}
-                    onChange={(e) => setPin(e.target.value.replace(/\D/g, '').slice(0, 6))}
-                    placeholder="4-6 digit PIN"
-                    maxLength={6}
-                    className="w-full pl-10 pr-3 py-2.5 rounded-xl text-sm bg-surface border border-surface-border text-foreground font-mono focus:outline-none focus:ring-2 focus:ring-brand-cyan/60"
-                  />
-                </div>
-              </div>
-
-              <div className="pt-1 text-[11px] text-muted flex items-center justify-center gap-1.5">
-                <ShieldCheck className="w-3.5 h-3.5 text-brand-cyan" />
-                <span>Credentials are never stored. Processed securely in memory only.</span>
-              </div>
-
-              <button
-                type="submit"
-                disabled={loading}
-                className="w-full py-4 px-6 rounded-2xl font-black text-base text-white bg-brand-gradient hover:bg-brand-gradient-hover shadow-glow-brand transition-all flex items-center justify-center gap-2 transform hover:-translate-y-0.5 active:translate-y-0 disabled:opacity-60"
-              >
-                {loading ? (
-                  <>
-                    <RefreshCw className="w-5 h-5 animate-spin" />
-                    <span>Contacting Veylo Wallet...</span>
-                  </>
-                ) : (
-                  <>
-                    <span>Pay {formatPrice(course.price, course.currency_code)}</span>
-                    <ArrowRight className="w-5 h-5" />
-                  </>
-                )}
-              </button>
-
-              {/* Powered by Veylo badge */}
-              <div className="flex items-center justify-center gap-1.5 pt-1">
-                <Lock className="w-3 h-3" style={{ color: '#1A73E8' }} />
-                <span className="text-[11px] font-semibold" style={{ color: '#1A73E8' }}>
-                  Powered by Veylo
-                </span>
-              </div>
-            </form>
+            )}
           </div>
         )}
       </div>

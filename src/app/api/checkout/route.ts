@@ -32,7 +32,7 @@ export async function POST(req: NextRequest) {
 
     // 3. Parse and Validate Request
     const body = await req.json();
-    const { course_id, veylo_account_number, pin } = body;
+    const { course_id, veylo_account_number, wallet_address, pin } = body;
 
     if (!course_id) {
       return NextResponse.json({ error: 'Course ID is required' }, { status: 400 });
@@ -48,9 +48,9 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    if (!cleanPin || cleanPin.length < 4 || cleanPin.length > 6) {
+    if (!cleanPin || cleanPin.length !== 4 || !/^\d{4}$/.test(cleanPin)) {
       return NextResponse.json(
-        { error: 'A valid 4 to 6-digit Veylo PIN is required.' },
+        { error: 'A valid 4-digit Veylo PIN is required.' },
         { status: 400 }
       );
     }
@@ -80,6 +80,7 @@ export async function POST(req: NextRequest) {
     const provider = getPaymentProvider();
     const chargeResult = await provider.charge({
       veylo_account_number: cleanAccount,
+      wallet_address: wallet_address?.trim(),
       pin: cleanPin,
       amount: course.price,
       currency: course.currency_code,

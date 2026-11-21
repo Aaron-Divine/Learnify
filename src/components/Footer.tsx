@@ -3,32 +3,28 @@
 import React from 'react';
 import Link from 'next/link';
 import { LearnifyLogo } from './LearnifyLogo';
-import { CURRENCIES } from '@/lib/currencies';
 import { ShieldCheck, Sparkles, Heart } from 'lucide-react';
 
 export function Footer() {
-  const availableCurrencies = CURRENCIES;
-
   return (
     <footer className="border-t border-surface-border bg-surface transition-colors duration-200 mt-20">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 lg:py-16">
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-8 lg:gap-12">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 lg:gap-12">
           {/* Brand Info */}
           <div className="md:col-span-2 space-y-4">
             <LearnifyLogo size="lg" />
             <p className="text-sm text-muted max-w-md leading-relaxed mt-3">
-              Learnify is an online learning platform empowering creators and learners
-              worldwide. Sell courses in your chosen global currency with zero forced conversion,
-              delivering HD streaming and modern video learning.
+              Learnify is an independent online learning platform empowering creators and learners
+              worldwide with high-definition video streaming and multi-currency pricing.
             </p>
             <div className="flex flex-wrap gap-2 pt-2">
               <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium bg-brand-cyan/10 text-brand-cyan border border-brand-cyan/20">
                 <Sparkles className="w-3 h-3" />
-                Interledger &amp; Open Payments Active
+                Interledger &amp; Open Payments Enabled
               </span>
               <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium bg-brand-orange/10 text-brand-orange border border-brand-orange/20">
                 <ShieldCheck className="w-3 h-3" />
-                Rafiki Dynamic FX Rates
+                Rafiki FX Engine Rates
               </span>
             </div>
           </div>
@@ -46,7 +42,7 @@ export function Footer() {
               </li>
               <li>
                 <Link href="/community" className="hover:text-brand-cyan transition-colors">
-                  Community Subscription
+                  Community Membership
                 </Link>
               </li>
               <li>
@@ -55,35 +51,11 @@ export function Footer() {
                 </Link>
               </li>
               <li>
-                <a
-                  href="https://veylo-beta.vercel.app"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="hover:text-brand-cyan transition-colors"
-                >
-                  Pay with Veylo Wallet ↗
-                </a>
+                <span className="text-xs text-muted">
+                  Accepted Payments: Veylo Wallet, Cards, Bank Transfer
+                </span>
               </li>
             </ul>
-          </div>
-
-          {/* Supported Currencies */}
-          <div>
-            <h3 className="text-sm font-bold uppercase tracking-wider text-foreground mb-4">
-              Supported Currencies
-            </h3>
-            <div className="flex flex-wrap gap-1.5">
-              {availableCurrencies.map((c) => (
-                <span
-                  key={c.code}
-                  className="inline-flex items-center gap-1 px-2.5 py-1 rounded text-xs bg-surface-muted border border-surface-border text-foreground font-mono font-medium"
-                  title={`${c.name} (${c.code})`}
-                >
-                  <span>{c.flag}</span>
-                  <span>{c.code}</span>
-                </span>
-              ))}
-            </div>
           </div>
         </div>
 

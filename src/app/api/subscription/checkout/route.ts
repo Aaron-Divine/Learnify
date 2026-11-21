@@ -27,7 +27,7 @@ export async function POST(req: NextRequest) {
 
     // 3. Parse input
     const body = await req.json();
-    const { veylo_account_number, pin, price_usd = 19.0 } = body;
+    const { veylo_account_number, wallet_address, pin, price_usd = 19.0 } = body;
 
     const cleanAccount = (veylo_account_number || '').replace(/\s+/g, '');
     const cleanPin = (pin || '').trim();
@@ -39,9 +39,9 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    if (!cleanPin || cleanPin.length < 4 || cleanPin.length > 6) {
+    if (!cleanPin || cleanPin.length !== 4 || !/^\d{4}$/.test(cleanPin)) {
       return NextResponse.json(
-        { error: 'A valid 4 to 6-digit Veylo PIN is required.' },
+        { error: 'A valid 4-digit Veylo PIN is required.' },
         { status: 400 }
       );
     }
@@ -52,6 +52,7 @@ export async function POST(req: NextRequest) {
 
     const chargeResult = await provider.charge({
       veylo_account_number: cleanAccount,
+      wallet_address: wallet_address?.trim(),
       pin: cleanPin,
       amount: price_usd,
       currency: 'USD',

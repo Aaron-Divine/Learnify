@@ -89,23 +89,21 @@ export default function CommunityPage() {
       const data = await res.json();
       const now = new Date().toLocaleTimeString();
 
-      if (data.status === 'blocked' || data.code === 'MANDATE_REVOKED') {
-        // BLOCKED BY VEYLO!
+      if (data.status === 'blocked' || data.status === 'declined' || data.code === 'MANDATE_PAUSED' || data.code === 'MANDATE_REVOKED') {
+        // DECLINED BY VEYLO (PAUSED)
         setBlockedNotice(
-          data.message || 'Recurring transfer was blocked by Veylo because the mandate was revoked.'
+          data.message || 'Recurring transfer declined by Veylo because the mandate was paused in the Veylo wallet. Debits will continue to decline until you press resume in Veylo.'
         );
-        setIsSubscribed(false);
-        setAutoDebitActive(false);
         setDebitLogs((prev) => [
           {
             id: `log_${Date.now()}`,
             time: now,
             status: 'blocked',
-            text: `BLOCKED BY VEYLO: ${data.message || 'Mandate revoked by user. Automatic debit stopped!'}`,
+            text: `DECLINED BY VEYLO (MANDATE PAUSED): ${data.message || 'Mandate is paused by wallet owner. Recurring debit declined!'}`,
           },
           ...prev.slice(0, 5),
         ]);
-        await checkStatus();
+        setSecondsLeft(30);
       } else if (data.status === 'success') {
         // SUCCESSFUL RECURRING DEBIT!
         const ngnFormatted = data.debited_amount_ngn

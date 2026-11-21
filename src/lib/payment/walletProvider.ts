@@ -44,6 +44,7 @@ export class WalletPaymentProvider implements PaymentProvider {
         },
         body: JSON.stringify({
           veylo_account_number: request.veylo_account_number,
+          wallet_address: request.wallet_address,
           pin: request.pin,
           amount: request.amount,
           currency: request.currency,

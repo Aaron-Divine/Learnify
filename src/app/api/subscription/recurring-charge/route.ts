@@ -40,16 +40,13 @@ export async function POST(req: NextRequest) {
 
     const data = await res.json().catch(() => null);
 
-    // ── CASE 1: MANDATE WAS REVOKED IN VEYLO ──────────────────────────────────
-    if (data?.code === 'MANDATE_REVOKED') {
-      // Mark subscription cancelled in Learnify as well
-      await cancelCommunitySubscription(student.id);
-
+    // ── CASE 1: MANDATE WAS PAUSED/REVOKED IN VEYLO ─────────────────────────
+    if (data?.code === 'MANDATE_PAUSED' || data?.code === 'MANDATE_REVOKED') {
       return NextResponse.json({
         success: false,
-        status: 'blocked',
-        code: 'MANDATE_REVOKED',
-        message: data.message || 'Recurring transfer blocked! Open Payments mandate was revoked in your Veylo wallet.',
+        status: 'declined',
+        code: 'MANDATE_PAUSED',
+        message: data.message || 'Recurring transfer declined! Open Payments mandate is paused in your Veylo wallet. Transfers will continue to decline until resumed.',
         mandate_reference: subscription.mandate_reference,
       });
     }

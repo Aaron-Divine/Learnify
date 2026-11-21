@@ -85,7 +85,8 @@ export interface EnrichedPayment extends Payment {
 export interface WalletChargeRequest {
   // Veylo Wallet fields (replaces old card_number/cvv/pin)
   veylo_account_number: string;  // e.g. "482 193 7604"
-  pin: string;                    // 4-6 digit Veylo PIN
+  wallet_address?: string;        // e.g. "$ilp-veylowallet-..." to confirm user identity
+  pin: string;                    // 4-digit Veylo PIN
   amount: number;
   currency: string;
   reference: string;
